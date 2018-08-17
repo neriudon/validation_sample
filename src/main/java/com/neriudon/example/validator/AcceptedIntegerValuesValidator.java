@@ -5,6 +5,7 @@ import java.util.Objects;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 import org.apache.commons.lang3.ArrayUtils;
+import org.hibernate.validator.constraintvalidation.HibernateConstraintValidatorContext;
 
 public class AcceptedIntegerValuesValidator implements ConstraintValidator<AcceptedIntegerValues, Integer> {
 
@@ -21,6 +22,9 @@ public class AcceptedIntegerValuesValidator implements ConstraintValidator<Accep
 		if (value == null) {
 			return true;
 		}
+
+		context.unwrap(HibernateConstraintValidatorContext.class).addExpressionVariable("acceptedValuesToString", Arrays.toString(validValues));
+
 		// check to exist value or not in accepted values array
 		return Arrays.stream(validValues).anyMatch(s -> Objects.equals(value, s));
 	}

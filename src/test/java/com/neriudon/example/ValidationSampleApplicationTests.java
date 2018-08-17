@@ -6,7 +6,9 @@ import static org.junit.Assert.assertThat;
 import com.neriudon.example.code.IntCode;
 import com.neriudon.example.code.StringCode;
 import com.neriudon.example.validator.AcceptedIntegerValues;
-import java.io.UnsupportedEncodingException;
+import com.neriudon.example.validator.AcceptedStringValues;
+
+import java.util.Arrays;
 import java.util.Set;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
@@ -40,53 +42,69 @@ public class ValidationSampleApplicationTests {
 	public void existStringCode() throws Exception {
 		StringCodeSample code = new StringCodeSample(STRING_EXIST_CODE);
 		Set<ConstraintViolation<StringCodeSample>> result = validator.validate(code);
-		assertThat(true, is(result.isEmpty()));
+		assertThat(result.isEmpty(), is(true));
 	}
 
 	@Test
 	public void notExistStringCode() throws Exception {
 		StringCodeSample code = new StringCodeSample(STRING_NOT_EXIST_CODE);
 		Set<ConstraintViolation<StringCodeSample>> result = validator.validate(code);
-		assertThat(1, is(result.size()));
-		assertThat(STRING_NOT_EXIST_CODE, is(result.iterator().next().getInvalidValue()));
+		assertThat(result.size(), is(1));
+		assertThat(result.iterator().next().getInvalidValue(), is(STRING_NOT_EXIST_CODE));
 	}
 
 	@Test
 	public void existIntCode() throws Exception {
 		IntCodeSample code = new IntCodeSample(INT_EXIST_CODE);
 		Set<ConstraintViolation<IntCodeSample>> result = validator.validate(code);
-		assertThat(true, is(result.isEmpty()));
+		assertThat(result.isEmpty(), is(true));
 	}
 
 	@Test
 	public void notExistIntCode() throws Exception {
 		IntCodeSample code = new IntCodeSample(INT_NOT_EXIST_CODE);
 		Set<ConstraintViolation<IntCodeSample>> result = validator.validate(code);
-		assertThat(1, is(result.size()));
-		assertThat(INT_NOT_EXIST_CODE, is(result.iterator().next().getInvalidValue()));
+		assertThat(result.size(), is(1));
+		assertThat(result.iterator().next().getInvalidValue(), is(INT_NOT_EXIST_CODE));
 	}
 
 	@Test
-	public void acceptedStringValuesNormal() throws UnsupportedEncodingException {
-		AcceptedIntegerValuesSample sample = new AcceptedIntegerValuesSample(1);
-		Set<ConstraintViolation<AcceptedIntegerValuesSample>> result = validator.validate(sample);
-		assertThat(true, is(result.isEmpty()));
+	public void acceptedStringValuesNormal() {
+		AcceptedStringValuesSample sample = new AcceptedStringValuesSample("1");
+		Set<ConstraintViolation<AcceptedStringValuesSample>> result = validator.validate(sample);
+		assertThat(result.isEmpty(), is(true));
 	}
 
 	@Test
-	public void acceptedStringValuesNg() throws Exception {
-		AcceptedIntegerValuesSample sample = new AcceptedIntegerValuesSample(0);
-		Set<ConstraintViolation<AcceptedIntegerValuesSample>> result = validator.validate(sample);
-		assertThat(1, is(result.size()));
+	public void acceptedStringValuesNg() {
+		AcceptedStringValuesSample sample = new AcceptedStringValuesSample("0");
+		Set<ConstraintViolation<AcceptedStringValuesSample>> result = validator.validate(sample);
+		assertThat(result.size(), is(1));
 		result.stream().forEach(r -> {
-			assertThat("0", is(r.getInvalidValue()));
-			assertThat("0 is not contained accepted value.not accepted value.", is(r.getMessage()));
+			assertThat(r.getInvalidValue(), is("0"));
+			System.out.println(r.getMessage());
 		});
 	}
 
-	/**
-	 * String型のコードを持つクラス
-	 */
+	@Test
+	public void acceptedIntegerValuesNormal() {
+		AcceptedIntegerValuesSample sample = new AcceptedIntegerValuesSample(1);
+		Set<ConstraintViolation<AcceptedIntegerValuesSample>> result = validator.validate(sample);
+		assertThat(result.isEmpty(), is(true));
+	}
+
+	@Test
+	public void acceptedIntegerValuesNg() {
+		AcceptedIntegerValuesSample sample = new AcceptedIntegerValuesSample(0);
+		Set<ConstraintViolation<AcceptedIntegerValuesSample>> result = validator.validate(sample);
+		assertThat(result.size(), is(1));
+		result.stream().forEach(r -> {
+			assertThat(r.getInvalidValue(), is(0));
+			System.out.println(r.getMessage());
+			
+		});
+	}
+
 	private static class StringCodeSample {
 		@CodeExists(StringCode.class)
 		private String code;
@@ -96,9 +114,6 @@ public class ValidationSampleApplicationTests {
 		}
 	}
 
-	/**
-	 * int型のコードを持つクラス
-	 */
 	private static class IntCodeSample {
 		@CodeExists(IntCode.class)
 		private int code;
@@ -114,6 +129,16 @@ public class ValidationSampleApplicationTests {
 		private int code;
 
 		public AcceptedIntegerValuesSample(int code) {
+			this.code = code;
+		}
+	}
+
+	private static class AcceptedStringValuesSample {
+
+		@AcceptedStringValues({ "1", "2", "3", "4", "5" })
+		private String code;
+
+		public AcceptedStringValuesSample(String code) {
 			this.code = code;
 		}
 	}
