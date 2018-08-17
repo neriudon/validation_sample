@@ -7,8 +7,8 @@ import com.neriudon.example.code.IntCode;
 import com.neriudon.example.code.StringCode;
 import com.neriudon.example.validator.AcceptedIntegerValues;
 import com.neriudon.example.validator.AcceptedStringValues;
+import com.neriudon.example.validator.MaxFromProperty;
 
-import java.util.Arrays;
 import java.util.Set;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
@@ -17,6 +17,7 @@ import javax.validation.ValidatorFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -30,13 +31,15 @@ public class ValidationSampleApplicationTests {
 	private static final int INT_NOT_EXIST_CODE = 1;
 
 	private ValidatorFactory validatorFactory;
+	
+	@Autowired
 	private Validator validator;
 
-	@Before
-	public void setup() {
-		validatorFactory = Validation.buildDefaultValidatorFactory();
-		validator = validatorFactory.getValidator();
-	}
+//	@Before
+//	public void setup() {
+//		validatorFactory = Validation.buildDefaultValidatorFactory();
+//		validator = validatorFactory.getValidator();
+//	}
 
 	@Test
 	public void existStringCode() throws Exception {
@@ -105,6 +108,19 @@ public class ValidationSampleApplicationTests {
 		});
 	}
 
+	@Test
+	public void maxFromPropertySampleNg() {
+		MaxFromPropertySample sample = new MaxFromPropertySample(100);
+		Set<ConstraintViolation<MaxFromPropertySample>> result = validator.validate(sample);
+		assertThat(result.size(), is(1));
+		result.stream().forEach(r -> {
+			assertThat(r.getInvalidValue(), is(100L));
+			System.out.println(r.getMessage());
+			
+		});
+	}
+
+	
 	private static class StringCodeSample {
 		@CodeExists(StringCode.class)
 		private String code;
@@ -140,6 +156,16 @@ public class ValidationSampleApplicationTests {
 
 		public AcceptedStringValuesSample(String code) {
 			this.code = code;
+		}
+	}
+	
+	private static class MaxFromPropertySample{
+		
+		@MaxFromProperty("max")
+		private long value;
+		
+		public MaxFromPropertySample(long value) {
+			this.value = value;
 		}
 	}
 
