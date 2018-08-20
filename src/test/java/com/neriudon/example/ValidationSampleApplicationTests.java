@@ -11,10 +11,7 @@ import com.neriudon.example.validator.MaxFromProperty;
 
 import java.util.Set;
 import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
 import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,17 +26,9 @@ public class ValidationSampleApplicationTests {
 	private static final String STRING_NOT_EXIST_CODE = "5";
 	private static final int INT_EXIST_CODE = 4;
 	private static final int INT_NOT_EXIST_CODE = 1;
-
-	private ValidatorFactory validatorFactory;
 	
 	@Autowired
 	private Validator validator;
-
-//	@Before
-//	public void setup() {
-//		validatorFactory = Validation.buildDefaultValidatorFactory();
-//		validator = validatorFactory.getValidator();
-//	}
 
 	@Test
 	public void existStringCode() throws Exception {

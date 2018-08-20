@@ -22,7 +22,7 @@ public @interface MaxFromProperty {
 
 	Class<? extends Payload>[] payload() default {};
 
-	String value() default "0";
+	String value();
 
 	@Target({ METHOD, FIELD })
 	@Retention(RUNTIME)
