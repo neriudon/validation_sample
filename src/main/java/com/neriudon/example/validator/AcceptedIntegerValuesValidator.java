@@ -22,7 +22,7 @@ public class AcceptedIntegerValuesValidator implements ConstraintValidator<Accep
 		if (value == null) {
 			return true;
 		}
-
+		// add acceptedValuesToString variable converted accepted integer values to string 
 		context.unwrap(HibernateConstraintValidatorContext.class).addExpressionVariable("acceptedValuesToString", Arrays.toString(validValues));
 
 		// check to exist value or not in accepted values array
