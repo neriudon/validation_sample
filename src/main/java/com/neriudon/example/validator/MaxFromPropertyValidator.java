@@ -1,5 +1,7 @@
 package com.neriudon.example.validator;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.List;
 
 import javax.validation.ConstraintValidator;
@@ -16,15 +18,14 @@ import org.springframework.core.env.PropertySourcesPropertyResolver;
 /**
  * check input value.
  */
-public class MaxFromPropertyValidator extends ApplicationObjectSupport
-		implements ConstraintValidator<MaxFromProperty, Long> {
+public abstract class MaxFromPropertyValidator<T> extends ApplicationObjectSupport
+		implements ConstraintValidator<MaxFromProperty, T> {
 
-	private long max;
+	protected long max;
 
 	private final PropertyResolver resolver;
 
 	public MaxFromPropertyValidator(List<PropertySourcesPlaceholderConfigurer> configurers, Environment environment) {
-
 		if (configurers != null) {
 			MutablePropertySources propertySources = new MutablePropertySources();
 			configurers.forEach(c -> c.getAppliedPropertySources().forEach(p -> {
@@ -47,17 +48,6 @@ public class MaxFromPropertyValidator extends ApplicationObjectSupport
 	}
 
 	/**
-	 * return true value is less than or equal to max, or null.
-	 */
-	@Override
-	public boolean isValid(Long value, ConstraintValidatorContext context) {
-		if (value == null) {
-			return true;
-		}
-		return value <= max;
-	}
-
-	/**
 	 * return max value.<br>
 	 * if no value mapped key, convert key to long.
 	 */
@@ -68,6 +58,72 @@ public class MaxFromPropertyValidator extends ApplicationObjectSupport
 		} catch (NumberFormatException e) {
 			throw new IllegalArgumentException(
 					"failed to get int value from Property(key:" + key + ", value:" + value + ")");
+		}
+	}
+
+	/**
+	 * MaxFromPropertyValidator for Number
+	 */
+	public static class NumberMaxFromPropertyValidator extends MaxFromPropertyValidator<Number> {
+
+		public NumberMaxFromPropertyValidator(List<PropertySourcesPlaceholderConfigurer> configurers,
+				Environment environment) {
+			super(configurers, environment);
+		}
+
+		@Override
+		public boolean isValid(Number value, ConstraintValidatorContext context) {
+			// null values are valid
+			if (value == null) {
+				return true;
+			}
+
+			// handling of NaN, positive infinity and negative infinity
+			else if (value instanceof Double) {
+				if ((Double) value == Double.NEGATIVE_INFINITY) {
+					return true;
+				} else if (Double.isNaN((Double) value) || (Double) value == Double.POSITIVE_INFINITY) {
+					return false;
+				}
+			} else if (value instanceof Float) {
+				if ((Float) value == Float.NEGATIVE_INFINITY) {
+					return true;
+				} else if (Float.isNaN((Float) value) || (Float) value == Float.POSITIVE_INFINITY) {
+					return false;
+				}
+			}
+			if (value instanceof BigDecimal) {
+				return ((BigDecimal) value).compareTo(BigDecimal.valueOf(max)) != 1;
+			} else if (value instanceof BigInteger) {
+				return ((BigInteger) value).compareTo(BigInteger.valueOf(max)) != 1;
+			} else {
+				long longValue = value.longValue();
+				return longValue <= max;
+			}
+		}
+	}
+
+	/**
+	 * MaxFromPropertyValidator for CharSequernce
+	 */
+	public static class CharSequenceMaxFromPropertyValidator extends MaxFromPropertyValidator<CharSequence> {
+
+		public CharSequenceMaxFromPropertyValidator(List<PropertySourcesPlaceholderConfigurer> configurers,
+				Environment environment) {
+			super(configurers, environment);
+		}
+
+		@Override
+		public boolean isValid(CharSequence value, ConstraintValidatorContext context) {
+			// null values are valid
+			if (value == null) {
+				return true;
+			}
+			try {
+				return new BigDecimal(value.toString()).compareTo(BigDecimal.valueOf(max)) != 1;
+			} catch (NumberFormatException nfe) {
+				return false;
+			}
 		}
 	}
 }

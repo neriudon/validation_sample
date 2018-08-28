@@ -11,7 +11,8 @@ import javax.validation.Constraint;
 import javax.validation.Payload;
 
 @Documented
-@Constraint(validatedBy = { MaxFromPropertyValidator.class })
+@Constraint(validatedBy = { MaxFromPropertyValidator.NumberMaxFromPropertyValidator.class,
+		MaxFromPropertyValidator.CharSequenceMaxFromPropertyValidator.class })
 @Target({ METHOD, FIELD })
 @Retention(RUNTIME)
 public @interface MaxFromProperty {

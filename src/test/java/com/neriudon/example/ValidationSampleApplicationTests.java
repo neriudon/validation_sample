@@ -26,7 +26,7 @@ public class ValidationSampleApplicationTests {
 	private static final String STRING_NOT_EXIST_CODE = "5";
 	private static final int INT_EXIST_CODE = 4;
 	private static final int INT_NOT_EXIST_CODE = 1;
-	
+
 	@Autowired
 	private Validator validator;
 
@@ -92,8 +92,6 @@ public class ValidationSampleApplicationTests {
 		assertThat(result.size(), is(1));
 		result.stream().forEach(r -> {
 			assertThat(r.getInvalidValue(), is(0));
-			System.out.println(r.getMessage());
-			
 		});
 	}
 
@@ -104,12 +102,29 @@ public class ValidationSampleApplicationTests {
 		assertThat(result.size(), is(1));
 		result.stream().forEach(r -> {
 			assertThat(r.getInvalidValue(), is(100L));
-			System.out.println(r.getMessage());
-			
 		});
 	}
 
-	
+	@Test
+	public void maxValueSetDirectlyNg() {
+		MaxValueSetDirectly sample = new MaxValueSetDirectly(100);
+		Set<ConstraintViolation<MaxValueSetDirectly>> result = validator.validate(sample);
+		assertThat(result.size(), is(1));
+		result.stream().forEach(r -> {
+			assertThat(r.getInvalidValue(), is(100L));
+		});
+	}
+
+	@Test
+	public void maxFromPropertyForCharSequenceNg() {
+		MaxFromPropertyForCharSequence sample = new MaxFromPropertyForCharSequence("100");
+		Set<ConstraintViolation<MaxFromPropertyForCharSequence>> result = validator.validate(sample);
+		assertThat(result.size(), is(1));
+		result.stream().forEach(r -> {
+			assertThat(r.getInvalidValue(), is("100"));
+		});
+	}
+
 	private static class StringCodeSample {
 		@CodeExists(StringCode.class)
 		private String code;
@@ -147,13 +162,33 @@ public class ValidationSampleApplicationTests {
 			this.code = code;
 		}
 	}
-	
-	private static class MaxFromPropertySample{
-		
+
+	private static class MaxFromPropertySample {
+
 		@MaxFromProperty("max")
 		private long value;
-		
+
 		public MaxFromPropertySample(long value) {
+			this.value = value;
+		}
+	}
+
+	private static class MaxValueSetDirectly {
+
+		@MaxFromProperty("99")
+		private long value;
+
+		public MaxValueSetDirectly(long value) {
+			this.value = value;
+		}
+	}
+
+	private static class MaxFromPropertyForCharSequence {
+
+		@MaxFromProperty("max")
+		private CharSequence value;
+
+		public MaxFromPropertyForCharSequence(CharSequence value) {
 			this.value = value;
 		}
 	}
