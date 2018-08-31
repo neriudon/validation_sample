@@ -21,7 +21,7 @@ import org.springframework.core.env.PropertySourcesPropertyResolver;
 public abstract class MaxFromPropertyValidator<T> extends ApplicationObjectSupport
 		implements ConstraintValidator<MaxFromProperty, T> {
 
-	protected long max;
+	private long max;
 
 	private final PropertyResolver resolver;
 
@@ -46,6 +46,26 @@ public abstract class MaxFromPropertyValidator<T> extends ApplicationObjectSuppo
 	public void initialize(MaxFromProperty constraintAnnotation) {
 		max = getMaxValue(constraintAnnotation.value());
 	}
+
+	@Override
+	public boolean isValid(T value, ConstraintValidatorContext context) {
+		// null values are valid
+		if (value == null) {
+			return true;
+		}
+		return compareToMaxValue(value, max);
+	}
+
+	/**
+	 * compare target value to maximum value
+	 * 
+	 * @param value
+	 *            target value
+	 * @param max
+	 *            maximum value
+	 * @return true if value is less than or equal to max.
+	 */
+	protected abstract boolean compareToMaxValue(T value, long max);
 
 	/**
 	 * return max value.<br>
@@ -72,14 +92,9 @@ public abstract class MaxFromPropertyValidator<T> extends ApplicationObjectSuppo
 		}
 
 		@Override
-		public boolean isValid(Number value, ConstraintValidatorContext context) {
-			// null values are valid
-			if (value == null) {
-				return true;
-			}
-
+		public boolean compareToMaxValue(Number value, long max) {
 			// handling of NaN, positive infinity and negative infinity
-			else if (value instanceof Double) {
+			if (value instanceof Double) {
 				if ((Double) value == Double.NEGATIVE_INFINITY) {
 					return true;
 				} else if (Double.isNaN((Double) value) || (Double) value == Double.POSITIVE_INFINITY) {
@@ -114,11 +129,7 @@ public abstract class MaxFromPropertyValidator<T> extends ApplicationObjectSuppo
 		}
 
 		@Override
-		public boolean isValid(CharSequence value, ConstraintValidatorContext context) {
-			// null values are valid
-			if (value == null) {
-				return true;
-			}
+		public boolean compareToMaxValue(CharSequence value, long max) {
 			try {
 				return new BigDecimal(value.toString()).compareTo(BigDecimal.valueOf(max)) != 1;
 			} catch (NumberFormatException nfe) {
